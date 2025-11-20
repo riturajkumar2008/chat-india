@@ -1,19 +1,28 @@
-const express = require('express');
-const Message = require('../models/Message');
-const router = express.Router();
+import React, { useEffect, useState } from "react";
+import { API_URL } from "../api";
 
-// Get all messages
-router.get('/', async (req, res) => {
-  const messages = await Message.find();
-  res.json(messages);
-});
+function Profile() {
+  const [user, setUser] = useState(null);
 
-// Send new message
-router.post('/', async (req, res) => {
-  const { from, to, text } = req.body;
-  const newMessage = new Message({ from, to, text });
-  await newMessage.save();
-  res.json(newMessage);
-});
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch(`${API_URL}auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => setUser(data))
+      .catch(err => console.error(err));
+  }, []);
 
-module.exports = router;
+  if (!user) return <p>Loading...</p>;
+
+  return (
+    <div className="border p-4 bg-white rounded">
+      <h2 className="font-bold">Profile</h2>
+      <p>Name: {user.name}</p>
+      <p>Email: {user.email}</p>
+    </div>
+  );
+}
+
+export default Profile;
