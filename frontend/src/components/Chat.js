@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io("http://localhost:5000");
+// ✅ Backend URL (Render)
+const socket = io("https://chat-india-com.onrender.com/");
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -9,11 +10,18 @@ function Chat() {
 
   useEffect(() => {
     socket.on("message", (msg) => setMessages((prev) => [...prev, msg]));
+
+    // cleanup socket listener
+    return () => {
+      socket.off("message");
+    };
   }, []);
 
   const sendMessage = () => {
-    socket.emit("message", input);
-    setInput("");
+    if (input.trim() !== "") {
+      socket.emit("message", input);
+      setInput("");
+    }
   };
 
   return (
@@ -26,8 +34,14 @@ function Chat() {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         className="border p-2 w-full"
+        placeholder="Type a message..."
       />
-      <button onClick={sendMessage} className="bg-blue-500 text-white px-4 py-2 mt-2">Send</button>
+      <button 
+        onClick={sendMessage} 
+        className="bg-blue-500 text-white px-4 py-2 mt-2"
+      >
+        Send
+      </button>
     </div>
   );
 }
