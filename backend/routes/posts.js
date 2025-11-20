@@ -1,19 +1,28 @@
-const express = require('express');
-const Post = require('../models/Post');
-const router = express.Router();
+import React, { useEffect, useState } from "react";
+import { API_URL } from "../api";
 
-// Get all posts
-router.get('/', async (req, res) => {
-  const posts = await Post.find();
-  res.json(posts);
-});
+function Profile() {
+  const [user, setUser] = useState(null);
 
-// Create new post
-router.post('/', async (req, res) => {
-  const { user, caption, image } = req.body;
-  const newPost = new Post({ user, caption, image });
-  await newPost.save();
-  res.json(newPost);
-});
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch(`${API_URL}auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => setUser(data))
+      .catch(err => console.error(err));
+  }, []);
 
-module.exports = router;
+  if (!user) return <p>Loading...</p>;
+
+  return (
+    <div className="border p-4 bg-white rounded">
+      <h2 className="font-bold">Profile</h2>
+      <p>Name: {user.name}</p>
+      <p>Email: {user.email}</p>
+    </div>
+  );
+}
+
+export default Profile;
